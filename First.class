@@ -1,0 +1,79 @@
+import java.io.*;
+import java.nio.file.*;
+import java.util.Scanner;
+
+import static java.nio.file.AccessMode.EXECUTE;
+import static java.nio.file.AccessMode.READ;
+
+public class First {
+
+    public static void main(String[] args) {
+        String request = getString();
+        if (getCommand(request).equals("grep")) grep(request);
+
+    }
+    private static boolean checkForWord(String line, String word) {
+        return line.contains(word);
+    }
+    private static void grep(String request){
+        String s = "";
+        String result = "";
+        String key = getKey(request);
+        String location = getLocation(request, key);
+        FileSystem fs = FileSystems.getDefault();
+        Path path = fs.getPath(location);
+        try {
+            path.getFileSystem().provider().checkAccess(path, READ, EXECUTE);
+        }
+        catch(IOException e){
+            System.out.println("File cannot be used for this application");
+        }
+        try {
+            InputStream input = new BufferedInputStream(Files.newInputStream(path));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+            s = reader.readLine();
+            while (s != null) {
+                if (checkForWord(s, key)) {
+                    result = result + s + '\n';
+                }
+                s = reader.readLine();
+            }
+            reader.close();
+        }
+        catch (IOException e){
+            System.out.println("Message: " + e);
+        }
+        System.out.println(result);
+    }
+
+    private static String getString() {
+        Scanner scanner = new Scanner(System.in);
+        String s;
+        s = scanner.nextLine();
+        return s;
+    }
+    private static String getKey(String req) {
+        String key = "";
+        int i = 5;
+        while (!(Character.toString(req.charAt(i))).equals(" ")) {
+            key = key + req.charAt(i++);
+        }
+        return key;
+    }
+    private static String getLocation(String req, String key) {
+        String loc = "";
+        int i = key.length() + 6;
+        while (i != req.length()) {
+            loc = loc + req.charAt(i++);
+        }
+        return loc;
+    }
+    private static String getCommand(String req) {
+        String com = "";
+        int i = 0;
+        while (!(Character.toString(req.charAt(i))).equals(" ")) {
+            com = com + req.charAt(i++);
+        }
+        return com;
+    }
+}
